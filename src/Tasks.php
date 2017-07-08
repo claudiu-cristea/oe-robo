@@ -63,11 +63,11 @@ class Tasks extends RoboTasks {
    * @aliases pss
    */
   public function projectSetupSettings() {
-    $settings_file = $this->root() . '/build/sites/default/settings.php';
+    $settings_file = $this->root() . "/{$this->config('site.webroot')}/sites/default/settings.php";
     $processor = new SettingsProcessor(Robo::config());
     $content = $processor->process($settings_file);
     $this->collectionBuilder()->addTaskList([
-      $this->taskFilesystemStack()->chmod('build/sites', 0775, 0000, TRUE),
+      $this->taskFilesystemStack()->chmod("{$this->config('site.webroot')}/sites", 0775, 0000, TRUE),
       $this->taskWriteToFile($settings_file)->text($content),
     ])->run();
   }
@@ -80,7 +80,7 @@ class Tasks extends RoboTasks {
    */
   protected function getInstallTask() {
     return $this->taskDrushStack($this->config('bin.drush'))
-      ->arg("--root={$this->root()}/build")
+      ->arg("--root={$this->root()}/{$this->config('site.webroot')}")
       ->siteName($this->config('site.name'))
       ->siteMail($this->config('site.mail'))
       ->locale($this->config('site.locale'))
