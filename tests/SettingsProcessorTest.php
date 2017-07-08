@@ -5,7 +5,7 @@ namespace EC\OpenEuropa\Robo\Tests;
 use EC\OpenEuropa\Robo\SettingsProcessor;
 use PHPUnit\Framework\TestCase;
 use Robo\Config\Config;
-use Robo\Config\YamlConfigLoader;
+use Consolidation\Config\Loader\YamlConfigLoader;
 
 /**
  * Class SettingsProcessorTest.
