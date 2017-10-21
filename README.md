@@ -35,6 +35,7 @@ $ ./vendor/bin/robo
 | `project:install-config` | Install project from existing configuration |
 | `project:setup-settings` | Setup Drupal `settings.php` file |
 | `project:setup-behat` | Setup Behat test environment |
+| `project:setup-phpunit` | Setup PHPUnit test environment |
 
 ## Configuration
 
@@ -73,6 +74,33 @@ behat:
   # Following tokens will be automatically replaced when running "project:setup-behat".
   tokens:
     _base_url: http://localhost
+
+# PHPUnit settings.
+phpunit:
+  # PHPUnit configuration template.
+  source: phpunit.xml.dist
+  # Local PHPUnit configuration file.
+  destination: phpunit.xml
+  # The path to testing bootstrap.php file.
+  bootstrap: !site.webroot/core/tests/bootstrap.php
+  # Test suites.
+  test_suites:
+    suite_name:
+      # Directories to scan for tests.
+      directory:
+        - ./custom/modules
+        - ./custom/profiles
+        - ./custom/themes
+      # Test files to run.
+      file: {  }
+  # Replace with "\Drupal\Tests\Listeners\HtmlOutputPrinter" to create HTML
+  # snapshots.
+  printer_class: null
+  # Following tokens will be automatically replaced when running "project:setup-phpunit".
+  tokens:
+    '{simpletest_base_url}': http://localhost
+    '{simpletest_db}': sqlite://localhost//tmp/test.sqlite
+    '{browser_output_directory}': /tmp
 
 # Binary location.
 bin:

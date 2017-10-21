@@ -30,6 +30,22 @@ class Tasks extends RoboTasks {
   }
 
   /**
+   * Setup PHPUnit.
+   *
+   * @command project:setup-phpunit
+   * @aliases pspu
+   */
+  public function projectSetupPhpUnit() {
+    $tokens = $this->config('phpunit.tokens');
+    $destination = $this->config('phpunit.destination');
+    $this->collectionBuilder()->addTaskList([
+      $this->taskFilesystemStack()->copy($this->config('phpunit.source'), $destination, TRUE),
+      $this->taskReplaceInFile($destination)->from(array_keys($tokens))->to($tokens),
+    ])->run();
+    $this->setupPhpUnitXml($destination);
+  }
+
+  /**
    * Install site.
    *
    * @command project:install
@@ -104,6 +120,53 @@ class Tasks extends RoboTasks {
    */
   protected function root() {
     return getcwd();
+  }
+
+  /**
+   * Sets-up the PHPUnit file.
+   *
+   * @param string $file
+   *   The local config file to be parsed.
+   */
+  protected function setupPhpUnitXml($file) {
+    // Load the PHPUnit file.
+    $document = new \DOMDocument('1.0', 'UTF-8');
+    $document->preserveWhiteSpace = FALSE;
+    $document->formatOutput = TRUE;
+    $document->load($file);
+
+    $phpunit = $document->getElementsByTagName('phpunit')->item(0);
+
+    // Fix the bootstrap path.
+    if (!empty($this->config('phpunit.bootstrap'))) {
+      $phpunit->setAttribute('bootstrap', $this->config('phpunit.bootstrap'));
+    }
+    // Add the printer class, if any.
+    if (!empty($this->config('phpunit.printer_class'))) {
+      $phpunit->setAttribute('printerClass', $this->config('phpunit.printer_class'));
+    }
+
+    // Add test suites.
+    $test_suites = $document->getElementsByTagName('testsuites')->item(0);
+    if ($suites = $this->config('phpunit.test_suites')) {
+      foreach ($suites as $suite_name => $suite) {
+        if ($suite) {
+          $test_suite = $document->createElement('testsuite');
+          $test_suite->setAttribute('name', $suite_name);
+          foreach ($suite as $type => $paths) {
+            foreach ($paths as $path) {
+              $element = $document->createElement($type);
+              $element->textContent = $path;
+              $test_suite->appendChild($element);
+            }
+          }
+          $test_suites->appendChild($test_suite);
+        }
+      }
+    }
+
+    // Save the file.
+    file_put_contents($file, $document->saveXML());
   }
 
 }
